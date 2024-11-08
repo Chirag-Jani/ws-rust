@@ -8,5 +8,5 @@ pub type ChatRooms = Arc<Mutex<HashMap<Uuid, Room>>>;
 
 pub struct Room {
     pub room_id: Uuid,
-    pub users: Vec<UnboundedSender<Message>>,
+    pub users: Vec<Uuid>,
 }

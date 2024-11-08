@@ -3,11 +3,10 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use tokio::sync::Mutex;
-use uuid::Uuid;
 mod connections;
 mod types;
 use connections::connect;
-use types::{ChatRooms, Clients, Room};
+use types::{ChatRooms, Clients};
 
 #[tokio::main]
 async fn main() {
@@ -15,21 +14,14 @@ async fn main() {
 
     let listener = init_ws().await;
 
-    // clients
+    // Clients and chat rooms
     let clients: Clients = Arc::new(Mutex::new(HashMap::new()));
-
-    // rooms things
     let chat_rooms: ChatRooms = Arc::new(Mutex::new(HashMap::new()));
-    let room_id = Uuid::new_v4();
-    let new_room: Room = Room {
-        room_id,
-        users: Vec::new(),
-    };
-    chat_rooms.lock().await.insert(room_id, new_room);
 
     while let Ok((stream, _)) = listener.accept().await {
         let clients_clone = Arc::clone(&clients);
-        tokio::spawn(connect(stream, clients_clone));
+        let chat_rooms_clone = Arc::clone(&chat_rooms);
+        tokio::spawn(connect(stream, clients_clone, chat_rooms_clone));
     }
 }
 
